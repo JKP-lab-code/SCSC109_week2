@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #a1efff;
+        }
+
+        h1 {
+            color: #010e04;
+        }
+
+        details {
+            border: 1px solid #CCCCCC;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        img {
+            border-radius: 24px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>My First Heading</h1>
+    <p2>Hello HTML</p2>
+    <p>My first paragraph.</p>
+    <p id="demo">My First word</p>
+    <img src="Screenshot 2026-07-12 212916.png" alt="Um.." width="400">
+    <button id="myBtn">Click me</button>
+    <p id="myParagraph">Select a size below.</p>
+
+    <button onclick="setSize('12px')">Small</button>
+    <button onclick="setSize('18px')">Medium</button>
+    <button onclick="setSize('28px')">Large</button>
+
+    <script>
+        document.getElementById("myBtn")
+            .addEventListener("click", function () {
+                alert("Hello, you clicked!");
+            });
+        function setSize(size) {
+            document.getElementById('myParagraph').style.fontSize = size;
+        }
+    </script>
+
+</body>
+
+</html>
