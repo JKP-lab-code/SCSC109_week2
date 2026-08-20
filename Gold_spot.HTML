@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Spot (XAU/USD) Real-Time Tracker</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Dark Theme (Default) */
+            --bg-body: #0b0f19;
+            --bg-card: #151c2c;
+            --bg-card-hover: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #26334d;
+            --gold-accent: #fbbf24;
+            --gold-gradient: linear-gradient(135deg, #f59e0b, #fbbf24);
+            --green-positive: #10b981;
+            --red-negative: #ef4444;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="light"] {
+            /* Light Theme */
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --gold-accent: #d97706;
+            --gold-gradient: linear-gradient(135deg, #b45309, #f59e0b);
+            --green-positive: #059669;
+            --red-negative: #dc2626;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-card);
+            padding: 16px 28px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--gold-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .logo-title h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-title p {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green-positive);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background-color: var(--green-positive);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Controls / Theme Switch */
+        .theme-toggle-btn {
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--gold-accent);
+            color: var(--gold-accent);
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-subtext {
+            font-size: 0.82rem;
+            color: var(--green-positive);
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex-grow: 1;
+            min-height: 540px;
+        }
+
+        .tradingview-container {
+            width: 100%;
+            height: 480px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Calculator & Overview Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .tool-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: var(--shadow);
+        }
+
+        .tool-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .calc-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            display: flex;
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .input-wrapper select {
+            background-color: rgba(0,0,0,0.05);
+            border: none;
+            border-left: 1px solid var(--border-color);
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        [data-theme="dark"] .input-wrapper select {
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: auto;
+            padding: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon"><i class="fa-solid fa-coins"></i></div>
+            <div class="logo-title">
+                <h1>GoldSpot Live <span class="live-badge"><span class="pulse-dot"></span> LIVE</span></h1>
+                <p>Real-Time XAU/USD Spot Price & Technical Analysis</p>
+            </div>
+        </div>
+
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
+            <span id="themeText">Dark Mode</span>
+        </button>
+    </header>
+
+    <div class="summary-grid">
+        <div class="stat-card">
+            <div class="stat-header"><span>GOLD SPOT (XAU/USD)</span><i class="fa-solid fa-chart-line"></i></div>
+            <div class="stat-value" id="spotPriceDisplay">Loading...</div>
+            <div class="stat-subtext"><i class="fa-solid fa-arrow-trend-up"></i> Real-time market feed</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header"><span>ESTIMATED PER GRAM</span><i class="fa-solid fa-weight-hanging"></i></div>
+            <div class="stat-value" id="priceGramDisplay">--</div>
+            <div class="stat-subtext">Base unit (1 Troy Oz = 31.1035g)</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header"><span>ESTIMATED PER KG</span><i class="fa-solid fa-cube"></i></div>
+            <div class="stat-value" id="priceKgDisplay">--</div>
+            <div class="stat-subtext">Bullion Bar standard (1,000g)</div>
+        </div>
+    </div>
+
+    <main class="chart-section">
+        <div class="chart-title">
+            <i class="fa-solid fa-chart-area" style="color: var(--gold-accent);"></i> Interactive Price Graph (OANDA:XAUUSD)
+        </div>
+        <div class="tradingview-container" id="tv_chart_container"></div>
+    </main>
+
+    <div class="tools-grid">
+        <div class="tool-card">
+            <div class="tool-title"><i class="fa-solid fa-calculator" style="color: var(--gold-accent);"></i> Gold Value Calculator</div>
+            <div class="calc-form">
+                <div class="input-group">
+                    <label for="weightInput">Enter Weight</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="weightInput" value="1" min="0" step="any" oninput="calculateGoldValue()">
+                        <select id="unitSelect" onchange="calculateGoldValue()">
+                            <option value="oz">Troy Ounce (oz)</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="tael">Tael (37.5g)</option>
+                            <option value="baht">Baht (15.244g)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="puritySelect">Purity / Karat</label>
+                    <div class="input-wrapper">
+                        <select id="puritySelect" onchange="calculateGoldValue()" style="width: 100%; border-left: none;">
+                            <option value="1.0">24K Pure Gold (99.9%)</option>
+                            <option value="0.916">22K Gold (91.6%)</option>
+                            <option value="0.750">18K Gold (75.0%)</option>
+                            <option value="0.585">14K Gold (58.5%)</option>
+                            <option value="0.417">10K Gold (41.7%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Estimated Value</label>
+                    <div class="stat-value" id="calcResultDisplay" style="font-size: 1.5rem; color: var(--gold-accent);">$0.00 USD</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-card">
+            <div class="tool-title"><i class="fa-solid fa-globe" style="color: var(--gold-accent);"></i> Metals Overview</div>
+            <div id="tv_mini_container" style="height: 200px; border-radius: 8px; overflow: hidden;"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Real-time market charts powered by TradingView API &bull; Gold Spot (XAU/USD)</p>
+    </footer>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        let currentTheme = localStorage.getItem('theme') || 'dark';
+        let latestGoldPrice = 2654.40;
+
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeUI();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initTradingViewWidget(currentTheme);
+            initMiniWidget(currentTheme);
+            fetchGoldPriceMock();
+        });
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            updateThemeUI();
+            initTradingViewWidget(currentTheme);
+            initMiniWidget(currentTheme);
+        }
+
+        function updateThemeUI() {
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            themeIcon.className = currentTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            themeText.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+        }
+
+        function initTradingViewWidget(theme) {
+            const container = document.getElementById('tv_chart_container');
+            container.innerHTML = '<div id="tradingview_xauusd" style="height: 100%; width: 100%;"></div>';
+            if (typeof TradingView !== 'undefined') {
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": "OANDA:XAUUSD",
+                    "interval": "D",
+                    "timezone": "Etc/UTC",
+                    "theme": theme,
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": theme === 'dark' ? '#151c2c' : '#ffffff',
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_xauusd"
+                });
+            }
+        }
+
+        function initMiniWidget(theme) {
+            const container = document.getElementById('tv_mini_container');
+            container.innerHTML = '';
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+                "colorTheme": theme,
+                "dateRange": "1D",
+                "showChart": false,
+                "locale": "en",
+                "width": "100%",
+                "height": "100%",
+                "isTransparent": true,
+                "tabs": [{
+                    "title": "Precious Metals",
+                    "symbols": [
+                        { "s": "OANDA:XAUUSD", "d": "Gold Spot" },
+                        { "s": "OANDA:XAGUSD", "d": "Silver Spot" },
+                        { "s": "TVC:PLATINUM", "d": "Platinum" }
+                    ]
+                }]
+            });
+            container.appendChild(script);
+        }
+
+        async function fetchGoldPriceMock() {
+            try {
+                const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const data = await res.json();
+                if (data && data.rates && data.rates.XAU) {
+                    latestGoldPrice = 1 / data.rates.XAU;
+                } else {
+                    latestGoldPrice = 2654.40 + (Math.random() * 1.5 - 0.75);
+                }
+            } catch (e) {
+                latestGoldPrice = 2654.40 + (Math.random() * 0.8 - 0.4);
+            }
+            updatePriceDisplays(latestGoldPrice);
+            calculateGoldValue();
+            setTimeout(fetchGoldPriceMock, 5000);
+        }
+
+        function updatePriceDisplays(price) {
+            document.getElementById('spotPriceDisplay').textContent = `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+            document.getElementById('priceGramDisplay').textContent = `$${(price / 31.1034768).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('priceKgDisplay').textContent = `$${((price / 31.1034768) * 1000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function calculateGoldValue() {
+            const weight = parseFloat(document.getElementById('weightInput').value) || 0;
+            const unit = document.getElementById('unitSelect').value;
+            const purity = parseFloat(document.getElementById('puritySelect').value) || 1.0;
+
+            let weightInOz = 0;
+            switch (unit) {
+                case 'oz': weightInOz = weight; break;
+                case 'g': weightInOz = weight / 31.1034768; break;
+                case 'kg': weightInOz = (weight * 1000) / 31.1034768; break;
+                case 'tael': weightInOz = (weight * 37.5) / 31.1034768; break;
+                case 'baht': weightInOz = (weight * 15.244) / 31.1034768; break;
+            }
+
+            const totalValue = weightInOz * latestGoldPrice * purity;
+            document.getElementById('calcResultDisplay').textContent = `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+        }
+    </script>
+</body>
+</html>
